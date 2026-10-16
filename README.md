@@ -25,8 +25,9 @@ chat line ──▶ /shield (Flash-Lite) ──▶ scene time it refers to ─�
 
 | Path | What |
 |---|---|
-| `GET /` | landing page |
-| `GET /app` | watch room |
+| `GET /` | the room (sync and chat UI with the AI manager) |
+| `GET /room?demo=1` | demo: viewer fixed at 20:00, scripted chat |
+| `GET /about` | landing page |
 | `POST /ingest` | `{video_id, segment}` → background job writing `DATA_DIR/<video>/seg<n>.json` |
 | `POST /ask` | `{video_id, t_sec, question}` → `{answerable, answer_ko, answer_en, cites}` |
 | `POST /shield` | `{video_id, t_sec, messages}` → per line `{refers_to, hidden, opens_at}` |
@@ -53,7 +54,6 @@ If an answer takes longer than 15 s, the server replays a cached answer only whe
 The sync and chat UI is adapted from our earlier private prototype (watch-party-sync, built 2026-10-14~15). Everything built with Gemini during the hackathon: Argon scene log with verification loop, time-bounded catch-up and Q&A, scene-aware spoiler shield.
 
 - `/room`: the real-time room (Supabase Realtime sync and chat from the prototype) with the AI manager added. `/room?demo=1` fixes the viewer at 20:00 with a scripted chat.
-- `/app`: a standalone single-viewer demo of the AI features.
 
 ## Run locally
 
@@ -64,7 +64,7 @@ uvicorn app.main:app --port 8080
 curl -X POST localhost:8080/ingest -H 'Content-Type: application/json' -d '{"video_id":"mE8yrHFjatQ","segment":"all"}'
 ```
 
-Open http://localhost:8080/app.
+Open http://localhost:8080/room?demo=1.
 
 ## Deploy (Cloud Run)
 

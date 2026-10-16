@@ -8,7 +8,7 @@ import uuid
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -112,13 +112,18 @@ def health():
 
 
 @app.get("/")
+def home():
+    return FileResponse(STATIC / "room" / "index.html")
+
+
+@app.get("/about")
 def landing():
     return FileResponse(STATIC / "index.html")
 
 
 @app.get("/app")
 def demo_page():
-    return FileResponse(STATIC / "app.html")
+    return RedirectResponse("/room?demo=1")
 
 
 @app.get("/room")
