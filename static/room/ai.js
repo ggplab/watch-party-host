@@ -37,6 +37,8 @@ export function askBackend(videoId, tSec, question) {
 
 const LOCK_UNKNOWN = '⚠ Possible spoiler, click to show';
 const LOCK_PENDING = 'Checking for spoilers...';
+const HOLD = '__hold__';      // not shown at all until the shield answers (max HOLD_MS)
+const HOLD_MS = 3000;
 const lockLater = () => '⚠ Spoiler (a later scene), click to show';
 
 /**
@@ -78,7 +80,7 @@ export function createShield({ getT, getVideoId, onUpdate }) {
     let added = false;
     for (const m of list) {
       if (!m || !m.id || info.has(m.id)) continue;
-      info.set(m.id, { status: 'pending', refers: null, social: false });
+      info.set(m.id, { status: 'pending', refers: null, social: false, at: Date.now() });
       buffer.push({ id: m.id, text: m.text });
       added = true;
     }
@@ -88,7 +90,11 @@ export function createShield({ getT, getVideoId, onUpdate }) {
   /** { visible, label }. label is the only thing that may be shown while hidden. */
   function view(id) {
     const i = info.get(id);
-    if (!i || i.status === 'pending') return { visible: false, label: LOCK_PENDING };
+    // pending: hold the line back; after HOLD_MS show it blurred (fail closed)
+    if (!i) return { visible: false, label: HOLD, hold: true };
+    if (i.status === 'pending') {
+      return Date.now() - i.at < HOLD_MS ? { visible: false, label: HOLD, hold: true } : { visible: false, label: LOCK_UNKNOWN };
+    }
     if (i.status !== 'ok') return { visible: false, label: LOCK_UNKNOWN };
     if (i.social) return { visible: true, label: '' };
     if (i.refers == null) return { visible: false, label: LOCK_UNKNOWN };

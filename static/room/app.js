@@ -501,6 +501,13 @@ function msgView(m, mine) {
 function msgNode(m, mine) {
   if (m.kind === 'recap' && m.recap) return recapNode(m);
   const v = msgView(m, mine);
+  if (!v.visible && v.hold) {
+    const h = document.createElement('p');   // placeholder: nothing visible until the shield answers
+    h.hidden = true;
+    h.dataset.mid = m.id;
+    h.dataset.lock = v.label;
+    return h;
+  }
   if (!v.visible) {
     const lk = document.createElement('p');
     lk.className = 'msg locked';
@@ -573,7 +580,11 @@ function refreshLocks() {
     const m = byId.get(node.dataset.mid);
     if (!m) continue;
     const v = msgView(m, m.fromMe);
-    if (v.label !== node.dataset.lock) node.replaceWith(msgNode(m, m.fromMe));
+    if (v.label !== node.dataset.lock) {
+      const wasHeld = node.dataset.lock === '__hold__';
+      node.replaceWith(msgNode(m, m.fromMe));
+      if (wasHeld) $('log').scrollTop = $('log').scrollHeight;   // a held line just appeared
+    }
   }
 }
 
