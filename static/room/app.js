@@ -1151,8 +1151,9 @@ $('recapBtn').addEventListener('click', async () => {
   const now = Date.now();
   if (now - lastLocalRecapAt < 10000) { toast('방금 요약을 넣었어요. 잠시 뒤에 다시 눌러 주세요'); return; }
   lastLocalRecapAt = now;
-  addRecapMsg(recapMsg(await buildRecapCard([]), true));
   $('people').hidden = true;
+  $('ai').open = true;
+  ai.ask(ai.RECAP_Q);  // summary up to the broadcast time, shown in the AI panel with time chips
 });
 
 /* ── 첫 접속 온보딩: 닉네임 입력 → 화면 안내(스포트라이트) ───────── */
@@ -1330,7 +1331,7 @@ async function startDemo() {
 if (DEMO) {
   startDemo();
 } else {
-  if (window.innerWidth >= 900) $('ai').open = true;
+  $('ai').open = true;
   setupChannel();
   if (!chatOnly) ensurePlayer().catch(() => {});
   if (store.get('wps.onboarded') !== '1') openNickModal();     // 모달이 떠 있어도 연결, 플레이어, 방장 상태 수신은 뒤에서 그대로 진행된다
