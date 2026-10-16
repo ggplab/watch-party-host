@@ -1,10 +1,32 @@
 import asyncio
 import json
 import os
+import subprocess
+import time
 
 import httpx
 
 BASE = "https://generativelanguage.googleapis.com/v1beta/models"
+# On Cloud Run set VERTEX_PROJECT: calls go through Vertex AI with the service account, no API key.
+VERTEX_PROJECT = os.environ.get("VERTEX_PROJECT")
+VERTEX_LOCATION = os.environ.get("VERTEX_LOCATION", "global")
+_token = {"value": None, "exp": 0.0}
+
+
+async def _vertex_token() -> str:
+    if _token["value"] and time.time() < _token["exp"]:
+        return _token["value"]
+    try:
+        async with httpx.AsyncClient(timeout=5) as c:
+            r = await c.get("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token",
+                            headers={"Metadata-Flavor": "Google"})
+            r.raise_for_status()
+            tok, ttl = r.json()["access_token"], r.json().get("expires_in", 3000)
+    except Exception:  # local development: use the gcloud login
+        tok = subprocess.run(["gcloud", "auth", "print-access-token"], capture_output=True, text=True).stdout.strip()
+        ttl = 3000
+    _token.update(value=tok, exp=time.time() + ttl - 120)
+    return tok
 
 
 def video_part(video_id: str, start: int, end: int) -> dict:
@@ -26,8 +48,13 @@ async def generate(model: str, parts: list, json_mode: bool = True, timeout: flo
     body = {"contents": [{"role": "user", "parts": parts}]}
     if json_mode:
         body["generationConfig"] = {"responseMimeType": "application/json"}
-    headers = {"x-goog-api-key": os.environ["GEMINI_API_KEY"], "Content-Type": "application/json"}
-    url = f"{BASE}/{model}:generateContent"
+    if VERTEX_PROJECT:
+        headers = {"Authorization": f"Bearer {await _vertex_token()}", "Content-Type": "application/json"}
+        url = (f"https://aiplatform.googleapis.com/v1/projects/{VERTEX_PROJECT}/locations/{VERTEX_LOCATION}"
+               f"/publishers/google/models/{model}:generateContent")
+    else:
+        headers = {"x-goog-api-key": os.environ["GEMINI_API_KEY"], "Content-Type": "application/json"}
+        url = f"{BASE}/{model}:generateContent"
     async with httpx.AsyncClient(timeout=timeout) as client:
         for attempt in range(2):
             r = await client.post(url, headers=headers, json=body)
