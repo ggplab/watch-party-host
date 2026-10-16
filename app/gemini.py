@@ -33,7 +33,7 @@ async def _vertex_token() -> str:
 
 def video_part(video_id: str, start: int, end: int) -> dict:
     return {
-        "fileData": {"fileUri": f"https://www.youtube.com/watch?v={video_id}"},
+        "fileData": {"fileUri": f"https://www.youtube.com/watch?v={video_id}", "mimeType": "video/*"},  # Vertex rejects an empty mimeType
         "videoMetadata": {"startOffset": f"{int(start)}s", "endOffset": f"{int(end)}s"},
     }
 
