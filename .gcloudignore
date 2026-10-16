@@ -4,3 +4,9 @@ __pycache__
 *.mp4
 .env
 local/brief.md
+local/data/mE8yrHFjatQ/seg[6-9].json
+local/data/mE8yrHFjatQ/seg[1-9][0-9].json
+local/data/-*
+local/data/L*
+local/*.md
+local/*.jpg
