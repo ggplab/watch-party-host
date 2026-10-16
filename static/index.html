@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Watch Party Host</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="/static/style.css"></head>
+<body><div class="wrap">
+<div class="hero">
+<h1>Watch Party Host</h1>
+<p class="tag">The AI manager for watch-party streams.</p>
+<p class="sub">Joined late? It catches you up to your exact moment, answers from scenes you've already seen, and keeps chat about later scenes locked until you get there.</p>
+<div class="cta"><a class="p" href="/app">Open the demo room</a><a href="https://github.com/ggplab/watch-party-host">GitHub</a></div>
+</div>
+<section><h2>The problem</h2>
+<p>Our book club watches a show together at 10 pm. Someone is always twenty minutes late, and someone else watches the next day. When they catch up, the chat is already full of scenes they haven't seen yet. Streamers face the same question every minute: 'what's going on?'</p></section>
+<section><div class="cards">
+<div class="card"><h3>Catch me up</h3><p>A summary up to your moment, including what only appears on screen, linked back to the scenes.</p></div>
+<div class="card"><h3>Ask anything up to now</h3><p>Answers come only from scenes you've watched, and it says "not yet" instead of guessing.</p></div>
+<div class="card"><h3>Spoiler shield</h3><p>Chat about scenes you haven't reached opens when you get there, locked by the scene it talks about, not by when it was posted.</p></div>
+</div></section>
+<section><h2>How it works</h2>
+<ol class="steps">
+<li>Gemini 4 Argon watches the episode straight from its YouTube URL and writes a scene log (who, what, on-screen text).</li>
+<li>A faster model re-checks clips against the log and Argon re-decides on disagreement (verification loop).</li>
+<li>Every answer and chat decision uses only scenes that ended before your time t.</li>
+</ol>
+<div class="flow"><span class="box">video URL</span><span class="arr">→</span><span class="box">Argon scene log</span><span class="arr">→</span><span class="box">verification loop</span><span class="arr">→</span><span class="box">your time t</span><span class="arr">→</span><span class="box">answers &amp; spoiler shield</span></div>
+</section>
+<section><div class="safe">Video plays only through the official YouTube embed. Everyone watches with their own access on the original platform; we share only positions (who is at which minute of which link). Scene logs are not published.</div></section>
+<footer>Built at Google DeepMind AI Hackathon, Seoul, 2026-10-16. © 2026 BuildnWrite. All rights reserved.</footer>
+</div></body></html>

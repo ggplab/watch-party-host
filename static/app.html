@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Watch Party Host, Room</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="/static/style.css"></head>
+<body>
+<header class="hdr"><h1>Watch Party Host</h1><span class="sub">The Community 2, Ep 1</span><span class="badge" id="badge">You are at 20:00</span></header>
+<div class="layout">
+<div class="left">
+<div class="player-wrap"><div id="player"></div></div>
+<div class="slider-row"><input type="range" id="slider" min="0" max="1800" step="1" value="1200"><span id="tlabel">20:00</span></div>
+<div class="label">Friends watching now (demo data)</div>
+<div class="chips" id="friends"></div>
+</div>
+<div class="right">
+<div class="panel">
+<h2>AI manager</h2>
+<button class="btn" id="catchup">Catch me up</button>
+<div class="ask-row"><input id="q" placeholder="Ask about anything up to now"><button class="btn" id="askbtn">Ask</button></div>
+<div id="answer"></div>
+</div>
+<div class="panel">
+<h2>Chat</h2>
+<div class="chat" id="chat"></div>
+<div class="note">Chat is a scripted demo log.</div>
+</div>
+</div>
+</div>
+<script src="/static/app.js"></script>
+<script src="https://www.youtube.com/iframe_api" async></script>
+</body></html>

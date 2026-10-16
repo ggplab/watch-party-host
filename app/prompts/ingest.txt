@@ -1,0 +1,12 @@
+You are logging a Korean reality show segment for a spoiler-safe watch party assistant.
+This clip is the episode segment from {START} to {END} (episode time). Report every timestamp in EPISODE time (MM:SS), between {START} and {END}.
+
+Write a scene log as JSON: {"scenes": [ ... ]}. Make a new entry whenever the situation, the people on screen, or the on-screen text changes. Aim for one entry every 10 to 20 seconds.
+Each entry:
+{"t_start": "MM:SS", "t_end": "MM:SS",
+ "who": ["names or descriptions of the people on screen, e.g. nickname from a name tag or caption, or 'woman in white jacket'"],
+ "what": "what happens, in Korean, one or two sentences",
+ "onscreen_text": "all visible text exactly as shown: edit captions, graphics, numbers, name tags, signs. Empty string if none",
+ "team_state": "visible team or group info: team colors, name-tag colors, counts, scores, items held. Empty string if none"}
+Prefer what is visible over what is said. Do not invent names; if a name is not shown or said, describe the person.
+No look-ahead: write each entry using only what a viewer could know by that entry's t_end. Never use information that is revealed later in the clip (a name, a role, an outcome). If someone is named later, keep describing them by appearance until the name appears.

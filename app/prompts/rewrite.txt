@@ -1,0 +1,8 @@
+A checker compared your scene log entry for this clip with what it saw at {T}, and reported a possible mismatch.
+Your entry: {ENTRY}
+Checker saw: {CHECK}
+Checker's reason: {REASON}
+The checker uses a smaller model and can misread small text. Look at the clip again yourself and decide.
+- If your entry was right, return it unchanged and set "kept": true.
+- If it was wrong, return the corrected entry and set "kept": false.
+Return one JSON object with keys t_start, t_end, who, what, onscreen_text, team_state, kept. Keep episode timestamps.

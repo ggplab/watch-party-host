@@ -1,0 +1,7 @@
+Two observers described the same span of a video. The LOG covers the span; the CHECK looked at the same span again.
+Decide if the LOG contradicts the CHECK.
+Wording differences, partial text, or one side noticing more or less is NOT a contradiction.
+A contradiction is a different number, a different name, a different color, or LOG text that clearly does not appear in the span.
+LOG: {LOG}
+CHECK: {CHECK}
+Answer with one JSON object: {"contradiction": true or false, "reason": "short"}

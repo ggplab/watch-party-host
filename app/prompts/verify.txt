@@ -1,0 +1,4 @@
+Look at this short clip, {T0} to {T1} (episode time), of a Korean reality show.
+Report what is visible during this span, as JSON:
+{"onscreen_text": "all visible text during the span, exactly as shown, empty string if none",
+ "team_state": "visible team colors, name-tag colors, counts, scores, items held; empty string if none"}
