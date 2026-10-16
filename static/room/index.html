@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://esm.sh https://www.youtube.com https://s.ytimg.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com; connect-src 'self' https://esm.sh https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https://i.ytimg.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net; base-uri 'none'; form-action 'none'">
-<meta name="theme-color" content="#0d0f14">
+<meta name="theme-color" content="#141312">
 <link rel="manifest" href="/static/room/manifest.json">
 <link rel="apple-touch-icon" href="/static/room/apple-touch-icon.png">
 <link rel="icon" href="/static/room/icon-192.png">
@@ -12,8 +12,10 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css">
 <style>
   :root {
-    --bg: #0d0f14; --panel: #151821; --panel2: #1c202c; --line: #292e3d;
-    --text: #eef1f8; --muted: #959eb3; --blue: #1f5eff; --red: #e5322d;
+    /* ggplab tokens on a dark base: warm neutrals, brand blue v2 (#2B4AC6), accentOnDark for blue text */
+    --bg: #141312; --panel: #1c1b1a; --panel2: #262523; --line: #3a3835;
+    --text: #f6f5f4; --muted: #a39e98; --blue: #2B4AC6; --blue-text: #96B3FE; --blue-dark: #203AA6; --red: #e5322d;
+    --radius: 8px;
     --safe-b: env(safe-area-inset-bottom, 0px);
     --safe-l: env(safe-area-inset-left, 0px);
     --safe-r: env(safe-area-inset-right, 0px);
@@ -25,31 +27,32 @@
     -webkit-text-size-adjust: 100%; }
   body { overflow: hidden; }
   button { font: inherit; color: inherit; cursor: pointer; border: 0; background: var(--panel2);
-    border-radius: 999px; padding: 7px 13px; min-height: 36px; }
-  button:active { filter: brightness(1.25); }
+    border-radius: var(--radius); padding: 7px 13px; min-height: 36px; }
+  button:active { filter: brightness(1.2); }
+  button:focus-visible, a.btn:focus-visible { outline: 2px solid var(--blue-text); outline-offset: 2px; }
   button.primary { background: var(--blue); color: #fff; font-weight: 700; }
   button.ghost { background: transparent; border: 1px solid var(--line); }
   button[disabled] { opacity: .45; cursor: default; }
   input { font: inherit; color: var(--text); background: var(--panel2); border: 1px solid var(--line);
-    border-radius: 10px; padding: 8px 11px; min-height: 40px; min-width: 0; }
-  input:focus { outline: 2px solid var(--blue); outline-offset: -1px; }
+    border-radius: var(--radius); padding: 8px 11px; min-height: 40px; min-width: 0; }
+  input:focus { outline: 2px solid var(--blue-text); outline-offset: -1px; }
 
   /* 팀 4색 막대 */
   .teambar { display: flex; height: 4px; }
   .teambar i { flex: 1; }
   .teambar i:nth-child(1) { background: #e5322d; }
-  .teambar i:nth-child(2) { background: #1f5eff; }
+  .teambar i:nth-child(2) { background: #2B4AC6; }
   .teambar i:nth-child(3) { background: #fff; }
-  .teambar i:nth-child(4) { background: #000; box-shadow: inset 0 1px 0 #2b2f3b; }
+  .teambar i:nth-child(4) { background: #000; box-shadow: inset 0 1px 0 #3a3835; }
 
   #app { height: calc(100vh - 4px); height: calc(var(--vvh, 100dvh) - 4px); display: flex; flex-direction: column; }
 
-  #top { display: flex; align-items: center; gap: 8px; padding: 6px 10px; flex: none;
+  #top { display: flex; align-items: center; gap: 8px; padding: 6px 10px; flex: none; background: var(--panel); border-bottom: 1px solid var(--line);
     padding-left: calc(10px + var(--safe-l)); padding-right: calc(10px + var(--safe-r)); }
-  #top .brand { font-weight: 800; letter-spacing: -.02em; white-space: nowrap; }
+  #top .brand { font-weight: 700; white-space: nowrap; }
   #roomLabel { color: var(--muted); font-size: 13px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .dot { width: 9px; height: 9px; border-radius: 50%; background: #6b7280; flex: none; }
-  .dot.on { background: #34d399; }
+  .dot.on { background: #5fb87a; }
   #top .grow { flex: 1 0 0; }
   #top button { padding: 5px 11px; min-height: 32px; font-size: 13px; white-space: nowrap; flex: none; }
 
@@ -80,18 +83,18 @@
   #syncbtns { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   #syncbtns button, #syncbtns a.btn { font-size: 13px; padding: 5px 12px; min-height: 34px; }
   a.btn { display: inline-flex; align-items: center; background: var(--panel2); color: var(--text);
-    border-radius: 999px; text-decoration: none; }
+    border-radius: var(--radius); text-decoration: none; }
   #playHint { position: absolute; z-index: 6; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: 94%;
-    padding: 12px 16px; min-height: 56px; border-radius: 18px; font-size: 18px; line-height: 1.3; text-align: center;
-    box-shadow: 0 8px 30px rgba(0,0,0,.55); }
+    padding: 12px 16px; min-height: 56px; border-radius: var(--radius); font-size: 18px; line-height: 1.3; text-align: center;
+    border: 1px solid rgba(255,255,255,.25); }
   #playHint b, #playHint small { display: block; }
   #playHint b { white-space: nowrap; font-size: 17px; }
-  #playHint small { font-size: 13px; font-weight: 500; opacity: .9; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #playHint small { font-size: 13px; font-weight: 400; opacity: .9; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #people .view-opts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
   #people .view-opts button, #people .view-opts a.btn { font-size: 13px; padding: 5px 12px; min-height: 34px; }
-  #banner { background: #3b1d1d; color: #ffb4b4; padding: 6px 12px; font-size: 13px; }
+  #banner { background: #3a1f1d; color: #f2b8b2; padding: 6px 12px; font-size: 13px; }
 
-  #hostTools { padding: 8px 10px; background: #12151d; border-bottom: 1px solid var(--line);
+  #hostTools { padding: 8px 10px; background: var(--bg); border-bottom: 1px solid var(--line);
     display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; }
   #hostTools .lbl { color: var(--muted); }
   #hostTools button.ep.active { background: var(--blue); font-weight: 700; }
@@ -100,32 +103,32 @@
 
   #chatonlyCard { padding: 22px 16px; text-align: center; background: var(--panel2); border-bottom: 1px solid var(--line); }
   #chatonlyCard p { margin: 0 0 14px; color: var(--muted); }
-  #chatonlyCard a.btn { background: var(--red); color: #fff; font-weight: 800; font-size: 18px; padding: 14px 24px; min-height: 54px; }
+  #chatonlyCard a.btn { background: var(--red); color: #fff; font-weight: 700; font-size: 18px; padding: 14px 24px; min-height: 54px; }
   #chatonlyCard #coStatus { color: var(--text); font-weight: 700; margin-bottom: 14px; }
 
   /* 채팅 */
   #log { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 12px; overscroll-behavior: contain;
     padding-left: calc(12px + var(--safe-l)); padding-right: calc(12px + var(--safe-r)); }
   #log:empty::before { content: "아직 채팅이 없습니다. 첫 마디를 남겨 보세요."; color: var(--muted); font-size: 13px; }
-  .msg { margin: 0 0 5px; word-break: break-word; overflow-wrap: anywhere; }
+  .msg { margin: 0 0 8px; line-height: 1.5; word-break: break-word; overflow-wrap: anywhere; }
   .msg b { margin-right: 6px; }
   .msg.me b::after { content: " (나)"; font-weight: 400; color: var(--muted); font-size: 12px; }
-  .vt { display: inline-block; font-size: 11px; color: var(--muted); background: var(--panel2);
-    border-radius: 6px; padding: 0 5px; margin-right: 6px; font-variant-numeric: tabular-nums; }
+  .vt { display: inline-block; margin-right: 8px; font-size: 11px; color: var(--muted); background: var(--panel2);
+    border-radius: 3px; padding: 0 5px; margin-right: 6px; font-variant-numeric: tabular-nums; }
 
   #composer { flex: none; border-top: 1px solid var(--line); background: var(--panel);
     padding: 6px 10px calc(8px + var(--safe-b)); padding-left: calc(10px + var(--safe-l)); padding-right: calc(10px + var(--safe-r)); }
   #emojis { display: flex; gap: 4px; margin-bottom: 6px; }
-  #emojis button { flex: 1; font-size: 20px; padding: 2px 0; min-height: 38px; border-radius: 12px; }
+  #emojis button { flex: 1; font-size: 20px; padding: 2px 0; min-height: 38px; background: transparent; border: 1px solid var(--line); }
   #form { display: flex; gap: 8px; }
   #text { flex: 1; font-size: 16px; }
-  #send { background: var(--blue); color: #fff; font-weight: 700; min-width: 76px; border-radius: 12px; }
+  #send { background: var(--blue); color: #fff; font-weight: 700; min-width: 76px; }
 
   /* 접속자 */
   #people { position: fixed; z-index: 60; right: 10px; top: 46px; width: min(320px, calc(100vw - 20px));
-    max-height: 70dvh; overflow: auto; background: #1a1e2a; border: 1px solid var(--line);
-    border-radius: 14px; padding: 12px; box-shadow: 0 12px 40px rgba(0,0,0,.5); }
-  #people h3 { margin: 0 0 8px; font-size: 13px; color: var(--muted); font-weight: 600; }
+    max-height: 70dvh; overflow: auto; background: var(--panel2); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 12px; }
+  #people h3 { margin: 0 0 8px; font-size: 13px; color: var(--muted); font-weight: 700; }
   #people .me-name { display: flex; gap: 6px; margin-bottom: 12px; }
   #people .me-name input { flex: 1; font-size: 16px; }
   #people ul { list-style: none; margin: 0; padding: 0; }
@@ -133,7 +136,8 @@
   #people li span.n { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #people li button { font-size: 12px; padding: 3px 10px; min-height: 28px; }
 
-  #demoBanner { padding: 4px 10px; font-size: 12px; background: #3a2f10; color: #ffd98a; text-align: center; }
+  /* 데모 표시는 상태 줄이 이미 말하므로 배너는 두 번 말하지 않는다 */
+  #demoBanner { display: none !important; padding: 4px 10px; font-size: 12px; background: var(--panel2); color: var(--muted); text-align: center; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
   #credit { flex: none; padding: 3px 10px calc(3px + var(--safe-b)); font-size: 10.5px; color: var(--muted); background: var(--panel);
     border-top: 1px solid var(--line); text-align: center; }
   body[data-mode="overlay"] #credit, body[data-mode="overlay"] #ai { display: none !important; }
@@ -141,8 +145,8 @@
   body.typing #credit { display: none; }
 
   /* AI manager */
-  #ai { flex: none; border-bottom: 1px solid var(--line); background: var(--panel2); }
-  #ai summary { padding: 8px 12px; font-weight: 700; cursor: pointer; list-style: none; }
+  #ai { flex: none; border-bottom: 1px solid var(--line); background: var(--panel); }
+  #ai summary { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px 6px; font-weight: 700; font-size: 13px; color: var(--muted); cursor: pointer; list-style: none; }
   #ai summary::-webkit-details-marker { display: none; }
   #ai summary::after { content: " +"; color: var(--muted); }
   #ai[open] summary::after { content: " -"; }
@@ -151,19 +155,19 @@
   .ai-t { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
   .ai-form { display: flex; gap: 6px; }
   .ai-form input { flex: 1; }
-  .ai-card { padding: 9px 11px; border-radius: 10px; background: rgba(31,94,255,.14); border-left: 3px solid var(--blue);
+  .ai-card { padding: 10px 12px; border-radius: var(--radius); background: var(--panel2); border: 1px solid var(--line);
     font-size: 14px; word-break: break-word; overflow-wrap: anywhere; }
   .ai-card p { margin: 0 0 5px; }
-  .ai-en { color: #c9d1e6; font-size: 13px; }
+  .ai-en { color: var(--muted); font-size: 13px; }
   .ai-foot { color: var(--muted); font-size: 11.5px; margin: 4px 0 0 !important; }
   .ai-chips, .ai-friends { display: flex; flex-wrap: wrap; gap: 6px; }
-  button.chip { min-height: 28px; padding: 3px 10px; font-size: 12.5px; background: var(--panel); border: 1px solid var(--line);
+  button.chip { min-height: 28px; padding: 3px 10px; font-size: 12.5px; border-radius: 999px; background: transparent; border: 1px solid var(--line); color: var(--blue-text);
     font-variant-numeric: tabular-nums; }
-  button.chip.friend { border-color: var(--blue); }
-  .msg.locked { color: var(--muted); font-size: 13px; }
+  button.chip.friend { border-color: var(--blue-text); }
+  .msg.locked { color: var(--muted); font-size: 12px; padding: 3px 8px; border: 1px dashed var(--line); border-radius: var(--radius); }
 
   #toast { position: fixed; left: 50%; bottom: calc(86px + var(--safe-b)); transform: translateX(-50%); z-index: 90;
-    background: rgba(20,22,30,.96); border: 1px solid var(--line); padding: 9px 16px; border-radius: 12px;
+    background: var(--panel2); border: 1px solid var(--line); padding: 9px 16px; border-radius: var(--radius);
     font-size: 14px; max-width: 90vw; text-align: center; }
 
   /* ── 모드: PC 나란히 ── */
@@ -177,6 +181,15 @@
   body[data-mode="side"] #main { overflow-y: auto; grid-column: 1; grid-row: 2; }
   body[data-mode="side"] #side { grid-column: 2; grid-row: 2; border-left: 1px solid var(--line); }
   body[data-mode="side"] #stage { width: min(100%, calc((100vh - 190px) * 16 / 9)); width: min(100%, calc((100dvh - 190px) * 16 / 9)); }
+  /* 데스크톱: 영상이 왼쪽 칸을 채우고 아래 검은 여백을 남기지 않는다(Argon 평가 1) */
+  body[data-mode="side"] #main { display: flex; flex-direction: column; }
+  body[data-mode="side"] #main > * { flex: none; }
+  body[data-mode="side"] #main > #stage { flex: 1 1 auto; width: 100%; min-height: 240px; aspect-ratio: auto; }
+  body[data-mode="side"] #syncbar { flex-direction: row; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); }
+  body[data-mode="side"] #statusline { flex: 1 1 0; min-width: 0; }
+  body[data-mode="side"] #emojis button { min-height: 32px; font-size: 17px; }
+  body[data-mode="side"] #text { font-size: 14px; min-height: 36px; }
+  body[data-mode="side"] #send { min-height: 36px; font-size: 14px; }
   body[data-mode="side"].side-collapsed #app { grid-template-columns: minmax(0, 1fr); }
   body[data-mode="side"].side-collapsed #side { display: none; }
   #sideToggle { display: none; }
@@ -197,14 +210,14 @@
   body[data-mode="overlay"] #side { position: static; background: none; display: block; }
   body[data-mode="overlay"] #composer { display: none; }
   body[data-mode="overlay"].ov-write #composer { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
-    background: rgba(10,12,18,.92); bottom: var(--kb, 0px); }
+    background: rgba(20,19,18,.94); bottom: var(--kb, 0px); }
   body[data-mode="overlay"].ov-write #emojis { display: none; }
   body[data-mode="overlay"] #ovChat { display: flex; flex-direction: column; justify-content: flex-end; gap: 4px;
     position: absolute; left: calc(10px + var(--safe-l)); bottom: 54px; width: min(48%, 380px); max-height: 60%;
     pointer-events: none; z-index: 4; overflow: hidden; }
   body[data-mode="overlay"][data-ov="dim"] #ovChat { opacity: .35; }
   body[data-mode="overlay"][data-ov="hide"] #ovChat { display: none; }
-  .ovmsg { background: rgba(0,0,0,.58); padding: 4px 9px; border-radius: 10px; font-size: 14px; line-height: 1.35;
+  .ovmsg { background: rgba(0,0,0,.62); padding: 4px 9px; border-radius: 4px; font-size: 14px; line-height: 1.35;
     word-break: break-word; overflow-wrap: anywhere; animation: pop .25s ease-out both, fade .7s ease-in var(--fade-at, 11s) forwards; }
   .ovmsg b { margin-right: 5px; }
   @keyframes pop { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -222,40 +235,41 @@
   body.chatonly #hostTools, body.chatonly #statusline { display: none; }
 
   /* 첫 접속 모달과 화면 안내. 큰 따라 보기 버튼(z 6)과 접속자 패널(z 60)보다 위에 둔다 */
-  .modal { position: fixed; inset: 0; z-index: 200; background: rgba(5,7,12,.82); display: flex;
+  .modal { position: fixed; inset: 0; z-index: 200; background: rgba(20,19,18,.84); display: flex;
     align-items: center; justify-content: center; padding: 16px; }
-  .modal .card { width: min(380px, 100%); background: #1a1e2a; border: 1px solid var(--line); border-radius: 18px;
-    padding: 20px 18px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
-  .modal h2 { margin: 0 0 4px; font-size: 19px; letter-spacing: -.02em; }
+  .modal .card { width: min(380px, 100%); background: var(--panel2); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 20px 18px; }
+  .modal h2 { margin: 0 0 4px; font-size: 19px; }
   .modal .sub { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
   .modal .row { display: flex; gap: 8px; margin-bottom: 8px; }
   .modal .row input { flex: 1; font-size: 16px; }
   .modal .row button { white-space: nowrap; flex: none; }
-  .modal .err { color: #ff9b9b; font-size: 13px; margin-bottom: 8px; }
-  .modal .wide { width: 100%; min-height: 46px; border-radius: 12px; margin-top: 4px; }
-  .recap { margin: 6px 0 8px; padding: 8px 10px; border-radius: 10px; background: rgba(31,94,255,.14);
-    border-left: 3px solid var(--blue); font-size: 14px; word-break: break-word; overflow-wrap: anywhere; }
-  .recap.local { background: rgba(255,255,255,.07); border-left-color: var(--muted); }
+  .modal .err { color: #f2b8b2; font-size: 13px; margin-bottom: 8px; }
+  .modal .wide { width: 100%; min-height: 46px; margin-top: 4px; }
+  .recap { margin: 6px 0 8px; padding: 10px 12px; border-radius: var(--radius); background: var(--panel2);
+    border: 1px solid var(--line); font-size: 14px; word-break: break-word; overflow-wrap: anywhere; }
+  .recap.local { background: transparent; }
   .recap p { margin: 0 0 3px; }
-  .recap .head { font-weight: 800; }
+  .recap .head { font-weight: 700; color: var(--blue-text); }
   .recap .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
-  .recap .body { color: #dfe4f0; }
+  .recap .body { color: var(--text); }
   #tour { position: fixed; inset: 0; z-index: 150; }
-  #tourSpot { position: fixed; border-radius: 12px; pointer-events: none; box-shadow: 0 0 0 9999px rgba(4,6,10,.78), 0 0 0 2px var(--blue); }
-  #tourTip { position: fixed; width: min(320px, calc(100vw - 24px)); background: #1a1e2a; border: 1px solid var(--line);
-    border-radius: 14px; padding: 14px; box-shadow: 0 14px 44px rgba(0,0,0,.6); }
+  #tourSpot { position: fixed; border-radius: var(--radius); pointer-events: none; box-shadow: 0 0 0 9999px rgba(4,6,10,.78), 0 0 0 2px var(--blue-text); }
+  #tourTip { position: fixed; width: min(320px, calc(100vw - 24px)); background: var(--panel2); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 14px; }
   #tourTip b { font-size: 16px; }
-  #tourTip p { margin: 6px 0 12px; font-size: 14px; line-height: 1.5; color: #d6dbe8; }
+  #tourTip p { margin: 6px 0 12px; font-size: 14px; line-height: 1.5; color: var(--text); }
   #tourTip .foot { display: flex; align-items: center; gap: 6px; }
   #tourTip .foot .grow { flex: 1; }
   #tourCount { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
   #tourTip button { min-height: 34px; padding: 5px 14px; font-size: 14px; }
   #tourAgain { font-size: 13px; padding: 5px 12px; min-height: 34px; margin-bottom: 12px; }
   @media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; } }
-  #syncBtn.primary { background: #ffd23f; color: #111; font-weight: 800; border: 0; box-shadow: 0 0 0 2px #111, 0 2px 10px rgba(0,0,0,.4); }
-  .recap-btn { background: #fff; color: #111; font-weight: 800; border: 0; border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  /* 노랑은 강조색이 아니라 "방장 화면과 어긋남" 상태 색이다 */
+  #syncBtn.primary { background: #f2c94c; color: #1c1b1a; font-weight: 700; border: 0; }
+  .recap-btn { background: #f6f5f4; color: #1c1b1a; font-weight: 700; border: 0; border-radius: var(--radius); padding: 6px 14px; cursor: pointer; }
   body[data-mode="overlay"] #ai { display: block !important; position: fixed; top: 44px; right: 8px; width: min(360px, 60vw);
-    max-height: 45vh; overflow: auto; z-index: 30; border: 1px solid var(--line); border-radius: 10px; }
+    max-height: 45vh; overflow: auto; z-index: 30; border: 1px solid var(--line); border-radius: var(--radius); }
 </style>
 </head>
 <body data-mode="portrait" data-ov="show">
@@ -376,7 +390,7 @@
     <p class="sub">채팅과 접속자 목록에 이 이름이 보여요.</p>
     <div class="row">
       <input id="nickInput" type="text" maxlength="12" aria-label="닉네임">
-      <button type="button" id="nickDice" class="ghost">🎲 추천 이름</button>
+      <button type="button" id="nickDice" class="ghost">추천 이름</button>
     </div>
     <div id="nickErr" class="err" role="alert" hidden>닉네임을 입력해 주세요</div>
     <button type="submit" class="primary wide">시작하기</button>
