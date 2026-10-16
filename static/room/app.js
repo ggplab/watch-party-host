@@ -105,7 +105,7 @@ function toast(text, ms = 3200) {
   clearTimeout(toast.timer);
   toast.timer = setTimeout(() => { t.hidden = true; }, ms);
 }
-function showBanner(text) { $('banner').textContent = text || ''; $('banner').hidden = !text; }
+function showBanner(text) { if (DEMO) text = ''; $('banner').textContent = text || ''; $('banner').hidden = !text; }
 
 /* ── 내 시청 시각과 영상 (AI 패널, 스포일러 방패가 쓴다) ───────────── */
 function getMyT() {
@@ -894,7 +894,7 @@ function renderStatus() {
     const a = $(id);
     if (url) a.href = url; else a.removeAttribute('href');
   }
-  $('takeBtn').hidden = !(gone && !isHost());
+  $('takeBtn').hidden = DEMO || !(gone && !isHost());
   $('peopleCount').textContent = String(presence.length || 1);
 }
 
