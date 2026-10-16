@@ -40,6 +40,7 @@ const LOCK_PENDING = 'Checking for spoilers...';
 const HOLD = '__hold__';      // not shown at all until the shield answers (max HOLD_MS)
 const HOLD_MS = 3000;
 const lockLater = () => '⚠ Spoiler (a later scene), click to show';
+const SHIELD_GRACE = 60;      // seconds; same as the backend. Scene start times are approximate and viewers drift
 
 /**
  * Spoiler shield. Every message id goes to /shield exactly once (batched).
@@ -98,7 +99,7 @@ export function createShield({ getT, getVideoId, onUpdate }) {
     if (i.status !== 'ok') return { visible: false, label: LOCK_UNKNOWN };
     if (i.social) return { visible: true, label: '' };
     if (i.refers == null) return { visible: false, label: LOCK_UNKNOWN };
-    if (i.refers > getT()) return { visible: false, label: lockLater(i.refers) };
+    if (i.refers > getT() + SHIELD_GRACE) return { visible: false, label: lockLater(i.refers) };
     return { visible: true, label: '' };
   }
 
