@@ -124,6 +124,7 @@ export function createAIPanel({ mount, getT, getVideoId, seekTo }) {
   const sum = el('summary', null, 'AI manager');
   const body = el('div', 'ai-body');
   const catchBtn = el('button', 'primary', 'Catch me up');
+  catchBtn.id = 'catchBtn';
   catchBtn.type = 'button';
   const form = el('form', 'ai-form');
   form.autocomplete = 'off';

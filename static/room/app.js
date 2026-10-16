@@ -885,7 +885,7 @@ function hostIsGone(now) {
 }
 
 function statusText(now, gone) {
-  if (DEMO) return '지금 방송 ' + fmtTime(getMyT()) + ' (demo, scripted chat)';
+  if (DEMO) return 'Now airing ' + fmtTime(getMyT()) + ' (demo, scripted chat)';
   if (!hostState) return gone ? '방장이 없습니다' : '방장을 찾는 중...';
   const label = epLabel(hostState.videoId) || hostState.title || (hostState.videoId ? '영상' : '영상 없음');
   if (gone) return `방장 ${hostState.hostName} 님이 나갔습니다 | ${label} | ${fmtTime(hostState.pos)}`;
@@ -1211,6 +1211,14 @@ const TOUR_STEPS = [
   { groups: [['#fsBtn', '#chatOnlyBtn'], ['#ovChatBtn']], title: '보는 방법 고르기',
     desc: '⛶ 영상 위에 채팅 띄우기(폰은 가로로 돌리면 자동), 영상 숨기기는 TV나 유튜브 앱으로 볼 때. 💬로 채팅을 보이기, 흐리게, 숨기기.' },
 ];
+const DEMO_TOUR_STEPS = [
+  { groups: [['#statusline']], title: 'Now airing',
+    desc: "Like a TV. Everyone watches the same scene; late joiners land right here." },
+  { groups: [['#catchBtn'], ['#ai']], title: 'Catch me up',
+    desc: "Feature 1. Joined late? Get a recap up to what's airing now, with the scenes it came from." },
+  { groups: [['#log']], title: 'Spoiler shield',
+    desc: "Feature 2. A spoiler about a scene that hasn't aired yet gets blurred the moment it's posted. Click only if you want to see it." },
+];
 function visibleRect(el) {
   const r = el.getBoundingClientRect();
   if (r.width <= 0 || r.height <= 0 || getComputedStyle(el).visibility === 'hidden') return null;
@@ -1268,7 +1276,8 @@ function showTourStep() {
   $('tourTitle').textContent = step.title;
   $('tourDesc').textContent = step.desc;
   $('tourCount').textContent = `${pos}/${total}`;
-  $('tourNext').textContent = pos === total ? '시작' : '다음';
+  $('tourNext').textContent = DEMO ? (pos === total ? 'Start' : 'Next') : (pos === total ? '시작' : '다음');
+  $('tourSkip').textContent = DEMO ? 'Skip' : '건너뛰기';
   $('tour').hidden = false;
   placeTour();
 }
@@ -1280,6 +1289,7 @@ function startTour() {
 function endTour() {
   tour = null;
   $('tour').hidden = true;
+  if (DEMO && demoPaused) startDemoClock();
   store.set('wps.onboarded', '1');
   renderHint();
 }
@@ -1311,12 +1321,20 @@ function renderFriendChips() {
 }
 // 1초마다: 내 시각 기준으로 잠금을 로컬에서 다시 판정한다. 5초마다: 내 위치를 presence 로 알린다
 setInterval(() => {
-  if (DEMO) { demoT = DEMO_T0 + Math.floor((Date.now() - demoStart) / 1000); releaseDemoChat(); }
+  if (DEMO && !demoPaused) { demoT = DEMO_T0 + Math.floor((Date.now() - demoStart) / 1000); releaseDemoChat(); }
   refreshLocks();
 }, 1000);
 setInterval(() => { if (!DEMO && ready) trackPresence(); }, 5000);
 
 let demoQueue = [];
+let demoPaused = true;   // the broadcast clock waits until the onboarding tour is closed
+/** demo: [Start] on the tour starts the broadcast at 21:25 */
+function startDemoClock() {
+  demoPaused = false;
+  demoStart = Date.now();
+  demoT = DEMO_T0;
+  ensurePlayer().then((p) => { p.seek(DEMO_T0); p.play(); }).catch(() => {});
+}
 /** demo: scripted chat lines appear when the broadcast reaches their posted time */
 function releaseDemoChat() {
   const due = [];
@@ -1351,8 +1369,10 @@ async function startDemo() {
   $('plusMin').hidden = false;
   releaseDemoChat();
   if (!chatOnly) {
-    try { const p = await ensurePlayer(); p.load(DEMO_VIDEO, DEMO_T0, true); } catch { /* clock still runs */ }
+    try { const p = await ensurePlayer(); p.load(DEMO_VIDEO, DEMO_T0, false); } catch { /* clock still runs */ }
   }
+  tour = { steps: DEMO_TOUR_STEPS, i: 0 };   // onboarding first; the clock starts on [Start] or [Skip]
+  showTourStep();
 }
 
 if (DEMO) {
