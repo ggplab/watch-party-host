@@ -1,0 +1,31 @@
+{
+  "name": "시청회 채팅",
+  "short_name": "시청회",
+  "description": "같은 영상을 같은 시각으로 보며 채팅하는 시청회 웹앱.",
+  "start_url": "/room",
+  "scope": "/room",
+  "display": "standalone",
+  "background_color": "#111214",
+  "theme_color": "#111214",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "/static/room/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/room/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/room/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

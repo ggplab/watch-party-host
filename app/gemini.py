@@ -11,6 +11,8 @@ BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 VERTEX_PROJECT = os.environ.get("VERTEX_PROJECT")
 VERTEX_LOCATION = os.environ.get("VERTEX_LOCATION", "global")
 _token = {"value": None, "exp": 0.0}
+# per-model call counts and latency, shown on /score as presentation numbers
+STATS: dict = {}
 
 
 async def _vertex_token() -> str:
@@ -55,6 +57,7 @@ async def generate(model: str, parts: list, json_mode: bool = True, timeout: flo
     else:
         headers = {"x-goog-api-key": os.environ["GEMINI_API_KEY"], "Content-Type": "application/json"}
         url = f"{BASE}/{model}:generateContent"
+    t0 = time.time()
     async with httpx.AsyncClient(timeout=timeout) as client:
         for attempt in range(2):
             r = await client.post(url, headers=headers, json=body)
@@ -63,6 +66,9 @@ async def generate(model: str, parts: list, json_mode: bool = True, timeout: flo
                 continue
             r.raise_for_status()
             break
+    st = STATS.setdefault(model, {"calls": 0, "total_ms": 0})
+    st["calls"] += 1
+    st["total_ms"] += int((time.time() - t0) * 1000)
     data = r.json()
     parts_out = data["candidates"][0]["content"]["parts"]
     text = "".join(p.get("text", "") for p in parts_out if not p.get("thought"))

@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from .gemini import generate, video_part
+from .gemini import STATS, generate, video_part
 
 ARGON = "gemini-4-argon"
 FLASH = "gemini-3.8-flash"
@@ -117,8 +117,13 @@ def landing():
 
 
 @app.get("/app")
-def room():
+def demo_page():
     return FileResponse(STATIC / "app.html")
+
+
+@app.get("/room")
+def room():
+    return FileResponse(STATIC / "room" / "index.html")
 
 
 # ---------- ingest (Argon + verification loop) ----------
@@ -310,5 +315,7 @@ def score(video_id: str = "mE8yrHFjatQ"):
             tot[k] += d.get("verify", {}).get(k, 0)
     return {"verify": tot, "scenes": n_scenes, "segments": len(seg_files(video_id)),
             "log_version": log_version(video_id),
+            "model_calls": {m: {"calls": v["calls"], "avg_ms": v["total_ms"] // max(v["calls"], 1)}
+                            for m, v in STATS.items()},
             "measured_2026_10_15": {"shield_safe": {"subtitles": 17, "flash": 17, "argon": 21, "total": 22},
                                     "shield_spoiler": {"hidden": 18, "total": 18}}}

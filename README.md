@@ -35,6 +35,26 @@ chat line ──▶ /shield (Flash-Lite) ──▶ scene time it refers to ─�
 
 If an answer takes longer than 15 s, the server replays a cached answer only when the key matches exactly (video, question, t, scene-log version).
 
+## Where Gemini is used
+
+| Step | Model | What it does |
+|---|---|---|
+| Scene log | `gemini-4-argon` | Watches each 5-minute YouTube segment directly (URL + offsets) and logs who, what, on-screen text, team state |
+| Verification loop | `gemini-3.8-flash` → `gemini-4-argon` | Flash re-checks 3 random clips per segment; on disagreement Argon looks again and keeps or fixes the entry (episode 1, 0 to 30 min: 16 checked, 6 flagged, 5 kept, 1 fixed) |
+| Catch-up and Q&A | `gemini-3.8-flash` | Answers only from scenes that ended before the viewer's time, with time chips |
+| Spoiler shield | `gemini-3.5-flash-lite` | Finds the scene time a chat line talks about |
+| Code | Argon via Antigravity (agy), Claude | App code |
+| Hosting | Cloud Run (asia-northeast3), Vertex AI | No API key in the service; it calls Gemini with its service account |
+
+`GET /score` shows live call counts and average latency per model.
+
+## What was built when
+
+The sync and chat UI is adapted from our earlier private prototype (watch-party-sync, built 2026-10-14~15). Everything built with Gemini during the hackathon: Argon scene log with verification loop, time-bounded catch-up and Q&A, scene-aware spoiler shield.
+
+- `/room`: the real-time room (Supabase Realtime sync and chat from the prototype) with the AI manager added. `/room?demo=1` fixes the viewer at 20:00 with a scripted chat.
+- `/app`: a standalone single-viewer demo of the AI features.
+
 ## Run locally
 
 ```bash
