@@ -33,7 +33,7 @@ async def _vertex_token() -> str:
 
 def video_part(video_id: str, start: int, end: int) -> dict:
     return {
-        "fileData": {"fileUri": f"https://www.youtube.com/watch?v={video_id}", "mimeType": "video/*"},  # Vertex rejects an empty mimeType
+        "fileData": {"fileUri": f"https://www.youtube.com/watch?v={video_id}"},
         "videoMetadata": {"startOffset": f"{int(start)}s", "endOffset": f"{int(end)}s"},
     }
 
@@ -46,40 +46,7 @@ def _parse(text: str):
     return json.loads(t)
 
 
-# TEXT_LLM=claude: text-only calls (ask, catch-up, shield) go to the Anthropic API; video calls stay on Gemini.
-TEXT_LLM = os.environ.get("TEXT_LLM", "gemini")
-CLAUDE_MODELS = {"gemini-3.8-flash": "claude-sonnet-5-5", "gemini-3.5-flash-lite": "claude-haiku-5-5"}
-
-
-async def _claude(model: str, parts: list, json_mode: bool, timeout: float):
-    cm = CLAUDE_MODELS.get(model, "claude-haiku-5-5")
-    text = "\n".join(p["text"] for p in parts)
-    if json_mode:
-        text += "\n\n설명 없이 JSON 객체 하나만 출력한다."
-    t0 = time.time()
-    async with httpx.AsyncClient(timeout=timeout) as client:
-        for attempt in range(2):
-            r = await client.post("https://api.anthropic.com/v1/messages", headers={
-                "x-api-key": os.environ["ANTHROPIC_API_KEY"], "anthropic-version": "2023-06-01",
-                "content-type": "application/json"},
-                json={"model": cm, "max_tokens": 2048, "messages": [{"role": "user", "content": text}]})
-            if r.status_code in (429, 500, 529) and attempt == 0:
-                await asyncio.sleep(3)
-                continue
-            r.raise_for_status()
-            break
-    st = STATS.setdefault(cm, {"calls": 0, "total_ms": 0})
-    st["calls"] += 1
-    st["total_ms"] += int((time.time() - t0) * 1000)
-    out = "".join(b.get("text", "") for b in r.json()["content"] if b.get("type") == "text")
-    if json_mode and "{" in out:
-        out = out[out.index("{"):out.rindex("}") + 1]
-    return _parse(out) if json_mode else out
-
-
 async def generate(model: str, parts: list, json_mode: bool = True, timeout: float = 300):
-    if TEXT_LLM == "claude" and all("text" in p for p in parts):
-        return await _claude(model, parts, json_mode, timeout)
     body = {"contents": [{"role": "user", "parts": parts}]}
     if json_mode:
         body["generationConfig"] = {"responseMimeType": "application/json"}
