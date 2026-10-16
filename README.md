@@ -44,7 +44,7 @@ If an answer takes longer than 15 s, the server replays a cached answer only whe
 | Verification loop | `gemini-3.8-flash` → `gemini-4-argon` | Flash re-checks 3 random clips per segment; on disagreement Argon looks again and keeps or fixes the entry (episode 1, 0 to 30 min: 16 checked, 6 flagged, 5 kept, 1 fixed) |
 | Catch-up and Q&A | `gemini-3.8-flash` | Answers only from scenes that ended before the viewer's time, with time chips |
 | Spoiler shield | `gemini-3.5-flash-lite` | Finds the scene time a chat line talks about |
-| Code | Claude Code (Claude Sonnet subagents for the UI port) | App code. An attempt to have Argon write code through the agy CLI failed on headless permissions. `gemini-4-argon` reviewed the UI from screenshots. |
+| Code | Claude Code (Claude Sonnet subagents for the UI port) | App code. `gemini-4-argon` builds the scene log and runs the verification loop inside the product, and reviewed the UI from screenshots. |
 | Hosting | Cloud Run (asia-northeast3), Vertex AI | No API key in the service; it calls Gemini with its service account |
 
 `GET /score` shows live call counts and average latency per model.
