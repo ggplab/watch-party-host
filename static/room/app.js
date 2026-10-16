@@ -1307,7 +1307,7 @@ async function startDemo() {
   $('text').disabled = true;
   $('ai').open = true;
   const [chat, friends] = await Promise.all([
-    fetch('/static/demo/chat_log.json').then((r) => r.json()).catch(() => []),
+    fetch('/static/demo/chat_log.json', { cache: 'no-store' }).then((r) => r.json()).catch(() => []),
     fetch('/static/demo/friends.json').then((r) => r.json()).catch(() => []),
   ]);
   demoFriends = (Array.isArray(friends) ? friends : [])
