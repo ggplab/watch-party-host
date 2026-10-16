@@ -14,7 +14,7 @@ const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 const DEMO = params.get('demo') === '1';
 const DEMO_VIDEO = 'mE8yrHFjatQ';
-const DEMO_T0 = 1285;            // demo broadcast starts at 21:25 (first locked line opens at 21:37)
+const DEMO_T0 = 1285;            // demo broadcast starts at 21:25; a rewatcher spoiler arrives at 21:40
 let demoT = DEMO_T0;
 let demoStart = Date.now();
 
@@ -491,8 +491,10 @@ function recapNode(m) {
 }
 
 /** 스포일러 방패: 가려진 메시지는 원문을 DOM에 넣지 않고 안내 문구만 둔다 */
+const revealed = new Set();   // spoilers the viewer chose to open (a human decision)
 function msgView(m, mine) {
   if (mine || m.fromMe || m.kind === 'recap') return { visible: true, label: '' };
+  if (revealed.has(m.id)) return { visible: true, label: '' };
   return shield.view(m.id);
 }
 
@@ -505,6 +507,11 @@ function msgNode(m, mine) {
     lk.dataset.mid = m.id;
     lk.dataset.lock = v.label;
     lk.textContent = v.label;
+    if (v.label.startsWith('⚠')) {
+      lk.classList.add('spoiler');
+      lk.title = 'Click to show this message';
+      lk.addEventListener('click', () => { revealed.add(m.id); refreshLocks(); });
+    }
     return lk;
   }
   const p = document.createElement('p');
@@ -1293,10 +1300,22 @@ function renderFriendChips() {
 }
 // 1초마다: 내 시각 기준으로 잠금을 로컬에서 다시 판정한다. 5초마다: 내 위치를 presence 로 알린다
 setInterval(() => {
-  if (DEMO) demoT = DEMO_T0 + Math.floor((Date.now() - demoStart) / 1000);
+  if (DEMO) { demoT = DEMO_T0 + Math.floor((Date.now() - demoStart) / 1000); releaseDemoChat(); }
   refreshLocks();
 }, 1000);
 setInterval(() => { if (!DEMO && ready) trackPresence(); }, 5000);
+
+let demoQueue = [];
+/** demo: scripted chat lines appear when the broadcast reaches their posted time */
+function releaseDemoChat() {
+  const due = [];
+  while (demoQueue.length && demoQueue[0].vt <= demoT) due.push(demoQueue.shift());
+  if (!due.length) return;
+  for (const m of due) seen.add(m.id);
+  msgs = mergeMsgs(msgs, due, CHAT_MAX);
+  shield.request(due);
+  rerenderLog();
+}
 
 async function startDemo() {
   document.body.classList.add('demo');
@@ -1313,16 +1332,13 @@ async function startDemo() {
   demoFriends = (Array.isArray(friends) ? friends : [])
     .map((f) => ({ name: String(f.name || '').slice(0, 12), t: toSec(f.t) })).filter((f) => f.name && f.t != null);
   renderFriendChips();
-  const list = (Array.isArray(chat) ? chat : []).map((c, i) => ({
+  demoQueue = (Array.isArray(chat) ? chat : []).map((c, i) => ({
     id: 'demo-' + String(c.id), name: String(c.nick || '').slice(0, 12), text: String(c.text || '').slice(0, 120),
     vt: toSec(c.posted_at), ts: Date.now() - (chat.length - i) * 1000,
-  })).filter((m) => m.id && m.text);
-  for (const m of list) seen.add(m.id);
-  msgs = mergeMsgs(msgs, list, CHAT_MAX);
+  })).filter((m) => m.id && m.text && m.vt != null).sort((a, b) => a.vt - b.vt);
   demoStart = Date.now();
   $('plusMin').hidden = false;
-  shield.request(list);
-  rerenderLog();
+  releaseDemoChat();
   if (!chatOnly) {
     try { const p = await ensurePlayer(); p.load(DEMO_VIDEO, DEMO_T0, true); } catch { /* clock still runs */ }
   }

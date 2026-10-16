@@ -35,9 +35,9 @@ export function askBackend(videoId, tSec, question) {
   return postJSON('/ask', { video_id: videoId, t_sec: Math.floor(tSec), question }, 60000);
 }
 
-const LOCK_UNKNOWN = 'Locked: scene not identified';
-const LOCK_PENDING = 'Checking scene...';
-const lockLater = (sec) => 'Locked: a later scene, opens at ' + mmss(sec);
+const LOCK_UNKNOWN = '⚠ Possible spoiler, click to show';
+const LOCK_PENDING = 'Checking for spoilers...';
+const lockLater = () => '⚠ Spoiler (a later scene), click to show';
 
 /**
  * Spoiler shield. Every message id goes to /shield exactly once (batched).
