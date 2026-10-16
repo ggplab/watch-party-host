@@ -36,6 +36,7 @@ export function askBackend(videoId, tSec, question) {
 }
 
 const LOCK_UNKNOWN = 'Locked: scene not identified';
+const LOCK_PENDING = 'Checking scene...';
 const lockLater = (sec) => 'Locked: a later scene, opens at ' + mmss(sec);
 
 /**
@@ -87,7 +88,8 @@ export function createShield({ getT, getVideoId, onUpdate }) {
   /** { visible, label }. label is the only thing that may be shown while hidden. */
   function view(id) {
     const i = info.get(id);
-    if (!i || i.status !== 'ok') return { visible: false, label: LOCK_UNKNOWN };
+    if (!i || i.status === 'pending') return { visible: false, label: LOCK_PENDING };
+    if (i.status !== 'ok') return { visible: false, label: LOCK_UNKNOWN };
     if (i.social) return { visible: true, label: '' };
     if (i.refers == null) return { visible: false, label: LOCK_UNKNOWN };
     if (i.refers > getT()) return { visible: false, label: lockLater(i.refers) };
