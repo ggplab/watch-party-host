@@ -3,11 +3,11 @@
 The AI manager for watch-party streams. Watch together, even when you are not watching at the same time.
 Built at Google DeepMind AI Hackathon, Seoul, 2026-10-16.
 
-A viewer who joins late is at their own video time `t`. Everything the host does is cut at that `t`:
+The host plays the episode like a TV broadcast. A viewer who joins late lands on the broadcast time `t`, and everything is cut at that `t`:
 
 - **Catch me up / Ask**: answers come only from scenes that ended before `t`, with time chips that jump back to the scene.
 - **Spoiler shield**: a chat line is locked by the scene it talks about, not by when it was posted. It opens when your `t` reaches that scene.
-- **Friend position chips**: `민지 ▶ 27:40` jumps your player to where a friend is. Video plays only through the official YouTube embed; we share positions, not video.
+- **TV mode**: the host plays the episode and everyone watches the same scene at the same time; viewers cannot seek. Video plays only through the official YouTube embed; we share the host's position, not video.
 
 ## How it works
 
@@ -53,7 +53,7 @@ If an answer takes longer than 15 s, the server replays a cached answer only whe
 
 The sync and chat UI is adapted from our earlier private prototype (watch-party-sync, built 2026-10-14~15). Everything built with Gemini during the hackathon: Argon scene log with verification loop, time-bounded catch-up and Q&A, scene-aware spoiler shield.
 
-- `/room`: the real-time room (Supabase Realtime sync and chat from the prototype) with the AI manager added. `/room?demo=1` fixes the viewer at 20:00 with a scripted chat.
+- `/room`: the real-time room (Supabase Realtime sync and chat from the prototype) with the AI manager added. `/room?demo=1` starts the broadcast at 20:00 with a scripted chat; rewatcher spoilers unlock live as the broadcast reaches their scenes.
 
 ## Run locally
 
