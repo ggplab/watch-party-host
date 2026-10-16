@@ -233,6 +233,7 @@ async def _answer(req: AskReq, ver: str) -> dict:
     ctx = "\n".join(scene_line(s) for s in scenes)
     p = prompt("answer", T=mmss(req.t_sec), CONTEXT=ctx, Q=req.question)
     p += '\nJSON 키에 "answer_en"(answer의 한 줄 영어 번역)도 넣는다.'
+    p += '\n"등장인물", "출연자", "사람"은 이 예능에 나온 출연자(명찰, 자막의 닉네임 포함)를 뜻한다.'
     p += '\nanswerable이 true이면 cites에 근거가 된 장면의 시작 시각(MM:SS)을 1~4개 반드시 넣는다.'
     r = await generate(FLASH, [{"text": p}], timeout=120)
     cites = []
@@ -254,7 +255,7 @@ async def ask(req: AskReq):
     n_done = sum(1 for s in load_scenes(req.video_id) if sec(s["t_end"]) <= req.t_sec)
     key = sha(f"{req.video_id}|{req.question}|scenes:{n_done}|{ver}")
     hit = cache_get(key)
-    if hit:
+    if hit and hit.get("answerable"):
         hit.update(cached=True, latency_ms=int((time.time() - t0) * 1000))
         return hit
     task = asyncio.create_task(_answer(req, ver))
