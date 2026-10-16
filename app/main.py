@@ -223,6 +223,7 @@ async def _answer(req: AskReq, ver: str) -> dict:
     ctx = "\n".join(scene_line(s) for s in scenes)
     p = prompt("answer", T=mmss(req.t_sec), CONTEXT=ctx, Q=req.question)
     p += '\nJSON 키에 "answer_en"(answer의 한 줄 영어 번역)도 넣는다.'
+    p += '\nanswerable이 true이면 cites에 근거가 된 장면의 시작 시각(MM:SS)을 1~4개 반드시 넣는다.'
     r = await generate(FLASH, [{"text": p}], timeout=120)
     cites = []
     for c in r.get("cites") or []:

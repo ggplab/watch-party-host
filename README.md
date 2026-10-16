@@ -48,9 +48,13 @@ Open http://localhost:8080/app.
 
 ## Deploy (Cloud Run)
 
+On Cloud Run the app calls Gemini through Vertex AI with the service account, so no API key is stored (`VERTEX_PROJECT`). Without it, it falls back to `GEMINI_API_KEY`.
+
 ```bash
-gcloud run deploy watch-party-host --source . --region asia-northeast3 --allow-unauthenticated \
-  --no-cpu-throttling --timeout 900 --set-env-vars GEMINI_API_KEY=...
+IMG=asia-northeast3-docker.pkg.dev/<project>/cloud-run-source-deploy/watch-party-host:v1
+docker buildx build --platform linux/amd64 -t $IMG --push .
+gcloud run deploy watch-party-host --image $IMG --region asia-northeast3 --allow-unauthenticated \
+  --no-cpu-throttling --timeout 900 --memory 1Gi --set-env-vars VERTEX_PROJECT=<project>,VERTEX_LOCATION=global
 ```
 
 Scene logs live in `local/data/` (git-ignored, not published). They ship only inside the private container image.
