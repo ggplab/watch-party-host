@@ -14,7 +14,7 @@ const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 const DEMO = params.get('demo') === '1';
 const DEMO_VIDEO = 'mE8yrHFjatQ';
-const DEMO_T0 = 1200;            // demo viewer starts at 20:00
+const DEMO_T0 = 1285;            // demo broadcast starts at 21:25 (first locked line opens at 21:37)
 let demoT = DEMO_T0;
 let demoStart = Date.now();
 
@@ -1147,13 +1147,12 @@ async function sendRecap() {
 }
 
 /** 누구나: 지금까지 요약을 내 화면에만 넣는다(방송하지 않음). 연타는 10초에 한 번 */
-$('recapBtn').addEventListener('click', async () => {
-  const now = Date.now();
-  if (now - lastLocalRecapAt < 10000) { toast('방금 요약을 넣었어요. 잠시 뒤에 다시 눌러 주세요'); return; }
-  lastLocalRecapAt = now;
-  $('people').hidden = true;
-  $('ai').open = true;
-  ai.ask(ai.RECAP_Q);  // summary up to the broadcast time, shown in the AI panel with time chips
+// demo only: the host skips the broadcast ahead one minute (for recording)
+$('plusMin').addEventListener('click', () => {
+  demoStart -= 60000;
+  demoT = DEMO_T0 + Math.floor((Date.now() - demoStart) / 1000);
+  ensurePlayer().then((p) => p.seek(demoT)).catch(() => {});
+  refreshLocks();
 });
 
 /* ── 첫 접속 온보딩: 닉네임 입력 → 화면 안내(스포트라이트) ───────── */
@@ -1321,6 +1320,7 @@ async function startDemo() {
   for (const m of list) seen.add(m.id);
   msgs = mergeMsgs(msgs, list, CHAT_MAX);
   demoStart = Date.now();
+  $('plusMin').hidden = false;
   shield.request(list);
   rerenderLog();
   if (!chatOnly) {

@@ -250,7 +250,13 @@ async def _answer(req: AskReq, ver: str) -> dict:
 async def ask(req: AskReq):
     t0 = time.time()
     ver = log_version(req.video_id)
-    key = sha(f"{req.video_id}|{req.question}|{req.t_sec}|{ver}")
+    # key on the evidence, not the clock: same question + same set of finished scenes -> same answer
+    n_done = sum(1 for s in load_scenes(req.video_id) if sec(s["t_end"]) <= req.t_sec)
+    key = sha(f"{req.video_id}|{req.question}|scenes:{n_done}|{ver}")
+    hit = cache_get(key)
+    if hit:
+        hit.update(cached=True, latency_ms=int((time.time() - t0) * 1000))
+        return hit
     task = asyncio.create_task(_answer(req, ver))
     try:
         res = await asyncio.wait_for(asyncio.shield(task), 15)
