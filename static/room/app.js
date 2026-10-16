@@ -16,6 +16,7 @@ const DEMO = params.get('demo') === '1';
 const DEMO_VIDEO = 'mE8yrHFjatQ';
 const DEMO_T0 = 1200;            // demo viewer starts at 20:00
 let demoT = DEMO_T0;
+let demoStart = Date.now();
 
 const SESSION_KEY = 'wps.hostSession';
 const sess = {
@@ -109,7 +110,9 @@ function showBanner(text) { if (DEMO) text = ''; $('banner').textContent = text 
 
 /* ── 내 시청 시각과 영상 (AI 패널, 스포일러 방패가 쓴다) ───────────── */
 function getMyT() {
-  if (DEMO && !(player && player.isPlaying())) return demoT;
+  // TV mode: everyone is at the broadcast time (the host's position), not their own player position
+  if (DEMO) return demoT;
+  if (hostState) return currentExpected(Date.now());
   return player ? player.getTime() : 0;
 }
 function getVideoIdNow() {
@@ -117,6 +120,7 @@ function getVideoIdNow() {
 }
 /** 친구 위치 칩이나 AI 시각 칩을 눌렀을 때 내 플레이어를 옮긴다 */
 function seekMy(sec) {
+  return;  // TV mode: viewers cannot move; the broadcast time is the host's
   if (DEMO) demoT = sec;
   ensurePlayer().then((p) => {
     if (!DEMO && autoFollow && hostState && !isHost()) { setAutoFollow(false); toast('Auto follow is off while you look around'); }
@@ -203,7 +207,7 @@ function alignTo(state, manual) {
 }
 
 function setAutoFollow(v) {
-  autoFollow = v;
+  autoFollow = true;  // TV mode: viewers always follow the host
   renderControls();
 }
 
@@ -863,7 +867,7 @@ function hostIsGone(now) {
 }
 
 function statusText(now, gone) {
-  if (DEMO) return 'Demo mode: scripted chat, you are at ' + fmtTime(getMyT());
+  if (DEMO) return '지금 방송 ' + fmtTime(getMyT()) + ' (demo, scripted chat)';
   if (!hostState) return gone ? '방장이 없습니다' : '방장을 찾는 중...';
   const label = epLabel(hostState.videoId) || hostState.title || (hostState.videoId ? '영상' : '영상 없음');
   if (gone) return `방장 ${hostState.hostName} 님이 나갔습니다 | ${label} | ${fmtTime(hostState.pos)}`;
@@ -1285,11 +1289,11 @@ function renderFriendChips() {
   const list = DEMO
     ? demoFriends
     : presence.filter((x) => x.id !== me.id && x.vt != null).map((x) => ({ name: x.name, t: x.vt }));
-  ai.renderFriends(list);
+  ai.renderFriends([]);  // TV mode: no per-friend positions
 }
 // 1초마다: 내 시각 기준으로 잠금을 로컬에서 다시 판정한다. 5초마다: 내 위치를 presence 로 알린다
 setInterval(() => {
-  if (DEMO && player && player.isPlaying()) demoT = player.getTime();
+  if (DEMO) demoT = DEMO_T0 + Math.floor((Date.now() - demoStart) / 1000);
   refreshLocks();
 }, 1000);
 setInterval(() => { if (!DEMO && ready) trackPresence(); }, 5000);
@@ -1315,10 +1319,11 @@ async function startDemo() {
   })).filter((m) => m.id && m.text);
   for (const m of list) seen.add(m.id);
   msgs = mergeMsgs(msgs, list, CHAT_MAX);
+  demoStart = Date.now();
   shield.request(list);
   rerenderLog();
   if (!chatOnly) {
-    try { const p = await ensurePlayer(); p.load(DEMO_VIDEO, DEMO_T0, false); p.pause(); } catch { /* t stays 20:00 */ }
+    try { const p = await ensurePlayer(); p.load(DEMO_VIDEO, DEMO_T0, true); } catch { /* clock still runs */ }
   }
 }
 
