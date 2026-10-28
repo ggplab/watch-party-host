@@ -287,6 +287,10 @@ class ShieldReq(BaseModel):
     messages: list[Msg]
 
 
+# scene start times are approximate and viewers drift: a scene this many seconds ahead counts as already seen
+SHIELD_GRACE = 60
+
+
 @app.post("/shield")
 async def shield(req: ShieldReq):
     scenes = load_scenes(req.video_id)
@@ -295,7 +299,8 @@ async def shield(req: ShieldReq):
     sem = asyncio.Semaphore(6)
 
     async def one(m: Msg):
-        key = sha(f"shield|{req.video_id}|{m.text}|{ver}")
+        # shield2: lenient prompt; do not reuse verdicts cached under the old strict prompt
+        key = sha(f"shield2|{req.video_id}|{m.text}|{ver}")
         r = cache_get(key)
         if r is None:
             try:
@@ -308,7 +313,7 @@ async def shield(req: ShieldReq):
             except Exception:
                 r = {"refers_to": None, "social": False}
         ref, social = r["refers_to"], r["social"]
-        hidden = (not social) and (ref is None or sec(ref) > req.t_sec)
+        hidden = (not social) and (ref is None or sec(ref) > req.t_sec + SHIELD_GRACE)
         return {"id": m.id, "refers_to": ref, "social": social, "hidden": hidden,
                 "opens_at": ref if (hidden and ref) else None}
 
