@@ -8,4 +8,4 @@ Google DeepMind AI Hackathon Seoul(2026-10-16)에서 만든 워치파티 AI 호�
 구조와 실행 방법은 `README.md`, 진행 상태는 `STATUS.md`. 같은 시기의 `watch-party-sync`(실험)와는 별개 레포다.
 
 ## 규칙
-- GitHub `ggplab/watch-party-host`. 2026-10-24 거버넌스 편입(유형 선언·번호 링크) — 해커톤 때 /new-project 없이 만들어졌다.
+- GitHub `ggplab/watch-party-host`. 2026-10-24 거버넌스 편입(유형 선언·번호 링크) — 해커톤 때 /add-project 없이 만들어졌다.
